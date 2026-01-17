@@ -5,6 +5,7 @@ async function handleRegisterUser(req, res) {
   console.log("inside handleRegisterUser()");
   try {
     const { username, email, password } = req.body;
+    console.log(req.body);
 
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
@@ -20,6 +21,7 @@ async function handleRegisterUser(req, res) {
       email,
       password,
     });
+    console.log("user created");
 
     res.status(201).json({
       message: "User registered successfully",
@@ -34,8 +36,8 @@ async function handleRegisterUser(req, res) {
   }
 }
 
-async function handleLoginUser(req, res) {
-  console.log("inside handleLoginUser()");
+async function loginUserController(req, res) {
+  console.log("inside loginUserController()");
   try {
     const { email, password } = req.body;
 
@@ -61,15 +63,15 @@ async function handleLoginUser(req, res) {
 
     res
       .cookie("accessToken", accessToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: "strict",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
         maxAge: 15 * 60 * 1000, // 15 min
       })
       .cookie("refreshToken", refreshToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: "strict",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .json({
@@ -103,4 +105,4 @@ async function handleLogoutUser(req, res) {
   }
 }
 
-export { handleRegisterUser, handleLoginUser, handleLogoutUser };
+export { handleRegisterUser, loginUserController, handleLogoutUser };
