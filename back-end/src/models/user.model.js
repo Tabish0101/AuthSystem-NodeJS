@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: 6,
+      minlength: 3,
       select: false,
     },
 
@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // userSchema.methods.comparePassword = async function (enteredPassword) {

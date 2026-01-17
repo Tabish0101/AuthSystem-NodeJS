@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { BASE_URL } from "../../constants/global.constants.js";
+import { Link } from "react-router-dom";
 
 const RegisterUser = () => {
   const [username, setUsername] = useState("");
@@ -29,7 +30,7 @@ const RegisterUser = () => {
     <div className="min-h-screen flex items-center justify-center bg-emerald-50">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
         <h2 className="text-2xl font-semibold text-emerald-700 mb-6 text-center">
-          RegisterUser
+          Create new account
         </h2>
 
         <form className="space-y-4">
@@ -83,13 +84,20 @@ const RegisterUser = () => {
           <p className="mt-4 text-sm text-red-600 text-center">{error}</p>
         )}
 
+        <div className="flex gap-2 mt-5 justify-center">
+          <p>Already have an account</p>{" "}
+          <Link to={"/login"} className="text-green-600 hover:text-green-700">
+            Login
+          </Link>
+        </div>
+
         <button
           onClick={handleRegisterUser}
           className="mt-6 w-full rounded-lg bg-emerald-600 py-2.5
                      text-white font-medium hover:bg-emerald-700
                      transition duration-200"
         >
-          RegisterUser
+          Sign Up
         </button>
       </div>
     </div>

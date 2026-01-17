@@ -21,7 +21,6 @@ async function handleRegisterUser(req, res) {
       email,
       password,
     });
-    console.log("user created");
 
     res.status(201).json({
       message: "User registered successfully",
@@ -32,6 +31,7 @@ async function handleRegisterUser(req, res) {
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Registration failed" });
   }
 }

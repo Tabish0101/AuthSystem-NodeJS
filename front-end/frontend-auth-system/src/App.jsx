@@ -1,16 +1,24 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/auth/Login.jsx";
 import RegisterUser from "./components/auth/RegisterUser.jsx";
+import LoggedIn from "./components/auth/LoggedIn.jsx";
 
 function App() {
   return (
-    <>
-      {/* <Login /> */}
-      <RegisterUser />
-    </>
+    <Routes>
+      {/* Default route */}
+      <Route path="/" element={<Navigate to="/login" />} />
+
+      {/* Auth routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<RegisterUser />} />
+
+      {/* Logged-in / dashboard */}
+      <Route path="/dashboard" element={<LoggedIn />} />
+
+      {/* Fallback */}
+      <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+    </Routes>
   );
 }
 

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { BASE_URL } from "../../constants/global.constants.js";
 
@@ -6,6 +7,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   async function handleLogin() {
     try {
@@ -18,6 +21,7 @@ const Login = () => {
 
       console.log(response.data);
       alert("Login Successfull");
+      navigate("/dashboard");
     } catch (error) {
       //   console.log("Failed !", error);
       setError(error.response.data.message);
@@ -42,8 +46,8 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2
-                     focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              required
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
           </div>
 
@@ -68,12 +72,20 @@ const Login = () => {
           <p className="mt-4 text-sm text-red-600 text-center">{error}</p>
         )}
 
+        <div className="flex gap-2 mt-5 justify-center">
+          <p>Don't have an account</p>{" "}
+          <Link
+            to={"/register"}
+            className="text-green-600 hover:text-green-700"
+          >
+            Signup
+          </Link>
+        </div>
+
         {/* Button */}
         <button
           onClick={handleLogin}
-          className="mt-6 w-full rounded-lg bg-emerald-600 py-2.5
-                 text-white font-medium hover:bg-emerald-700
-                 transition duration-200"
+          className="mt-6 w-full rounded-lg bg-emerald-600 py-2.5 text-white font-medium hover:bg-emerald-700 transition duration-200"
         >
           Login
         </button>
