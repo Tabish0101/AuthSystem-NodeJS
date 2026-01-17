@@ -65,13 +65,13 @@ async function loginUserController(req, res) {
       .cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 15 * 60 * 1000, // 15 min
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .json({
@@ -105,4 +105,58 @@ async function handleLogoutUser(req, res) {
   }
 }
 
-export { handleRegisterUser, loginUserController, handleLogoutUser };
+async function refreshAccessTokenController(req, res) {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token missing" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    const user = await User.findOne({
+      _id: decoded.userId,
+      refreshToken,
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Token reuse detected" });
+    }
+
+    const newAccessToken = generateAccessToken(user._id);
+    const newRefreshToken = generateRefreshToken(user._id);
+
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res
+      .cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({ message: "Access token refreshed" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to refresh token" });
+  }
+}
+
+export {
+  handleRegisterUser,
+  loginUserController,
+  handleLogoutUser,
+  refreshAccessTokenController,
+};
