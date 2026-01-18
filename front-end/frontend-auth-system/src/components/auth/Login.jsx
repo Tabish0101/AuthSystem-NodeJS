@@ -14,13 +14,17 @@ const Login = () => {
     try {
       setError("");
 
-      const response = await axios.post(`${BASE_URL}api/auth/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${BASE_URL}api/auth/login`,
+        {
+          email,
+          password,
+        },
+        { withCredentials: true },
+      );
 
       console.log(response.data);
-      alert("Login Successfull");
+      sessionStorage.setItem("accessToken", response.data.accessToken);
       navigate("/dashboard");
     } catch (error) {
       //   console.log("Failed !", error);
@@ -46,7 +50,6 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
           </div>
@@ -61,8 +64,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2
-                     focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
           </div>
         </form>
@@ -85,7 +87,7 @@ const Login = () => {
         {/* Button */}
         <button
           onClick={handleLogin}
-          className="mt-6 w-full rounded-lg bg-emerald-600 py-2.5 text-white font-medium hover:bg-emerald-700 transition duration-200"
+          className="mt-6 w-full rounded-lg bg-emerald-600 py-2.5 text-white font-medium hover:bg-emerald-700 transition duration-200 cursor-pointer"
         >
           Login
         </button>

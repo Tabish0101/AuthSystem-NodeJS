@@ -1,8 +1,10 @@
+import jwt from "jsonwebtoken";
+
 import User from "../models/user.model.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 
-async function handleRegisterUser(req, res) {
-  console.log("inside handleRegisterUser()");
+async function registerUserController(req, res) {
+  console.log("inside registerUserController()");
   try {
     const { username, email, password } = req.body;
     console.log(req.body);
@@ -50,7 +52,7 @@ async function loginUserController(req, res) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordMatch = user.password === password;
+    const isPasswordMatch = await user.comparePassword(password);
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -61,34 +63,30 @@ async function loginUserController(req, res) {
     user.refreshToken = refreshToken;
     await user.save();
 
-    res
-      .cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 15 * 60 * 1000, // 15 min
-      })
-      .cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      })
-      .json({
-        message: "Login successful",
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-        },
-      });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: process.env.JWT_REFRESH_COOKIE_AGE || 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+      accessToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Login failed" });
   }
 }
 
-async function handleLogoutUser(req, res) {
-  console.log("inside handleLogoutUser()");
+async function logoutUserController(req, res) {
+  console.log("inside logoutUserController()");
+
   try {
     const refreshToken = req.cookies.refreshToken;
 
@@ -96,12 +94,16 @@ async function handleLogoutUser(req, res) {
       await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
     }
 
+    // Clear ONLY refresh token cookie
     res
-      .clearCookie("accessToken")
-      .clearCookie("refreshToken")
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      })
       .json({ message: "Logged out successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Logout failed", error });
+    res.status(500).json({ message: "Logout failed" });
   }
 }
 
@@ -110,14 +112,20 @@ async function refreshAccessTokenController(req, res) {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "Refresh token missing" });
+      return res.status(401).json({
+        message: "Refresh token missing",
+        code: "NO_REFRESH_TOKEN",
+      });
     }
 
     let decoded;
     try {
-      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    } catch (err) {
-      return res.status(401).json({ message: "Invalid refresh token" });
+      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch (error) {
+      return res.status(401).json({
+        message: "Invalid or expired refresh token",
+        code: "INVALID_REFRESH_TOKEN",
+      });
     }
 
     const user = await User.findOne({
@@ -126,37 +134,42 @@ async function refreshAccessTokenController(req, res) {
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Token reuse detected" });
+      return res.status(401).json({
+        message: "Token reuse detected",
+        code: "TOKEN_REUSE",
+      });
     }
 
+    // Generate new tokens
     const newAccessToken = generateAccessToken(user._id);
     const newRefreshToken = generateRefreshToken(user._id);
 
+    // Rotate refresh token
     user.refreshToken = newRefreshToken;
     await user.save();
 
-    res
-      .cookie("accessToken", newAccessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
-      })
-      .cookie("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
-      .json({ message: "Access token refreshed" });
+    // Set new refresh token in cookie
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: process.env.JWT_REFRESH_COOKIE_AGE || 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Send access token in response body
+    return res.status(200).json({
+      accessToken: newAccessToken,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to refresh token" });
+    return res.status(500).json({
+      message: "Failed to refresh token",
+    });
   }
 }
 
 export {
-  handleRegisterUser,
+  registerUserController,
   loginUserController,
-  handleLogoutUser,
+  logoutUserController,
   refreshAccessTokenController,
 };

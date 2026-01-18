@@ -4,7 +4,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import authRouter from "./src/routes/auth.routes.js";
+import dashboardRouter from "./src/routes/dashboard.routes.js";
 import connectMongoDB from "./src/db/connect.js";
+import { verifyAccessToken } from "./src/middlewares/auth.middlewares.js";
 
 dotenv.config();
 const app = express();
@@ -27,6 +29,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/auth", authRouter);
+app.use("/api/dashboard", verifyAccessToken, dashboardRouter);
 
 app.listen(port, () => {
   console.log(`server started on port ${port}`);
