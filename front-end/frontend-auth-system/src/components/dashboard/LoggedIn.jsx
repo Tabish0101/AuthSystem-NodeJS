@@ -1,4 +1,4 @@
-import api from "../../api/axiosInstance.js";
+import api from "../../apis/axiosInstance.js";
 import { useNavigate } from "react-router-dom";
 import UserProfile from "./UserProfile.jsx";
 
