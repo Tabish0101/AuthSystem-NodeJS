@@ -36,14 +36,18 @@ const UserProfile = () => {
 
       {error && <p className="text-red-500 mt-2">{error}</p>}
 
-      {profile && (
-        <div className="mt-4 p-4 border rounded shadow-sm">
-          <h3 className="font-bold text-lg">Welcome, {profile.username}!</h3>
-          <p>Email: {profile.email}</p>
-          <p>Role: {profile.role}</p>
-          <p>Account Status: {profile.isVerified ? "Verified" : "Pending"}</p>
-        </div>
-      )}
+      {
+        profile ?
+          <div className="mt-4 p-4 border rounded shadow-sm">
+            <h3 className="font-bold text-lg">Welcome, {profile.username}!</h3>
+            <p>Email: {profile.email}</p>
+            <p>Role: {profile.role}</p>
+            <p>Account Status: {profile.isVerified ? "Verified" : "Pending"}</p>
+          </div>
+          // Skeleton Loader
+        : <div className="bg-slate-200 h-[50px] w-[100px] animate-pulse border-slate-600 border-2"></div>
+
+      }
     </div>
   );
 };
