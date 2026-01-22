@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { BASE_URL } from "../../constants/global.constants.js";
 import { Link } from "react-router-dom";
+import { registerUserApi } from "../../apis/auth.apis.js";
 
 const RegisterUser = () => {
   const [username, setUsername] = useState("");
@@ -13,13 +14,10 @@ const RegisterUser = () => {
     try {
       setError("");
 
-      const response = await axios.post(`${BASE_URL}api/auth/register`, {
-        username,
-        email,
-        password,
-      });
+      const userRegistrationData = { username, email, password };
+      const data = await registerUserApi(userRegistrationData);
 
-      console.log(response.data);
+      console.log(data);
       alert("Registration successful");
     } catch (error) {
       setError(error.response?.data?.message || "Something went wrong");

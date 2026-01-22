@@ -1,20 +1,14 @@
-import api from "../../apis/axiosInstance.js";
 import { useNavigate } from "react-router-dom";
 import UserProfile from "./UserProfile.jsx";
+import { logoutApi } from "../../apis/auth.apis.js";
 
 const LoggedIn = ({ onLogout }) => {
   const navigate = useNavigate();
 
   async function handleLogout() {
     try {
-      // Call backend logout endpoint
-      await api.post("/api/auth/logout");
-
-      // Clear access token from memory (parent/state)
+      await logoutApi();
       onLogout();
-
-      // Redirect to login
-      navigate("/login");
     } catch (error) {
       console.error("Logout failed", error);
     }
@@ -22,6 +16,7 @@ const LoggedIn = ({ onLogout }) => {
 
   function onLogout() {
     sessionStorage.removeItem("accessToken");
+    navigate("/login");
   }
 
   return (

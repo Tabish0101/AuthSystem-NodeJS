@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../apis/axiosInstance";
+import { getProfileDataApi } from "../../apis/auth.apis";
 
 const UserProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -15,8 +15,8 @@ const UserProfile = () => {
     setError("");
 
     try {
-      const response = await api.get("/api/dashboard/profile");
-      setProfile(response.data.user);
+      const data = await getProfileDataApi();
+      setProfile(data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch profile");
     } finally {
@@ -36,18 +36,20 @@ const UserProfile = () => {
 
       {error && <p className="text-red-500 mt-2">{error}</p>}
 
-      {
-        profile ?
-          <div className="mt-4 p-4 border rounded shadow-sm">
-            <h3 className="font-bold text-lg">Welcome, {profile.username}!</h3>
-            <p>Email: {profile.email}</p>
-            <p>Role: {profile.role}</p>
-            <p>Account Status: {profile.isVerified ? "Verified" : "Pending"}</p>
-          </div>
-          // Skeleton Loader
-        : <div className="bg-slate-200 h-[50px] w-[100px] animate-pulse border-slate-600 border-2"></div>
+      {profile && (
+        <div className="mt-4 p-4 border rounded shadow-sm">
+          <h3 className="font-bold text-lg">Welcome, {profile.username}!</h3>
+          <p>Email: {profile.email}</p>
+          <p>Role: {profile.role}</p>
+          <p>Account Status: {profile.isVerified ? "Verified" : "Pending"}</p>
+        </div>
+      )}
 
-      }
+      {loading &&
+        // Skeleton Loader
+        loading && (
+          <div className="bg-slate-200 h-[50px] w-[100px] animate-pulse border-slate-600 border-2"></div>
+        )}
     </div>
   );
 };
