@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import { getProfileDataApi } from "../../apis/auth.apis";
 
 const UserProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["profile"],
+    queryFn: getProfileDataApi,
+    enabled: false,
+  });
 
   useEffect(() => {
     fetchProfile();
